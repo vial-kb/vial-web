@@ -6,6 +6,7 @@ body {
     font-family: sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #ccc;
 }
 #canvas {
     width: 100%;
@@ -21,6 +22,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
 }
 #startup_btn {
     font-size: 250%;
@@ -58,13 +60,22 @@ body {
     width: 30%;
     text-align: center;
 }
+#error_msg {
+    color: red;
+}
 </style>
 </head>
 <body>
 
 <div id="startup">
     <div id="startup_inner">
-        <input id="startup_btn" type="button" onclick="connect()" value="Start Vial" disabled="true" />
+        <input id="startup_btn" type="button" onclick="connect()" value="Start Vial" disabled="true" /><br>
+        <div id="error" style="display:none">
+            <p id="error_msg"></p>
+            <p>You can check web browser support at <a href="https://caniuse.com/webhid" target="_blank">caniuse.com</a>.<br>
+                Latest versions of Chrome, Chromium or Edge are recommended to use Vial Web.<br>
+                You can also download the standalone Vial application from <a href="https://get.vial.today/" target="_blank">get.vial.today</a>.</p>
+        </div>
     </div>
     <div id="version">Vial: @VIAL_VER@<br>Web: @WEB_VER@</div>
 </div>
@@ -159,6 +170,18 @@ body {
     function update_animation() {
         g_animation_counter = (g_animation_counter + 1) % 5;
         document.getElementById("startup_btn").value = "Starting up" + ".".repeat(g_animation_counter + 1);
+    }
+
+    function show_error(e) {
+        document.getElementById("startup_btn").style.display = "none";
+        document.getElementById("error").style.display = "";
+        document.getElementById("error_msg").innerHTML = e;
+    }
+
+    if (!("hid" in navigator)) {
+        show_error("Your web browser does not support WebHID");
+    } else if (!HTMLCanvasElement.prototype.transferControlToOffscreen) {
+        show_error("Your web browser does not support OffscreenCanvas");
     }
 </script>
 
