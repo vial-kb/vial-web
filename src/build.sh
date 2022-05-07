@@ -14,6 +14,7 @@ VIAL_VER=$(cd ../../vial-gui/ && git rev-parse HEAD)
 WEB_VER=$(git rev-parse HEAD)
 UNIQVER=$(echo ${VIAL_VER} ${WEB_VER} | sha256sum | awk '{print $1}')
 
+cp ../icon.png .
 cp -r ../../deps/cpython/builddir/emscripten-browser/usr .
 cp ../../vial-gui/src/main/resources/base/qmk_settings.json usr/local
 cp ../../vial-gui/src/build/settings/base.json usr/local/build_settings.json
