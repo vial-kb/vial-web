@@ -97,9 +97,15 @@ body {
     Module.canvas = document.getElementById("canvas");
     Module.qtCanvasElements = [Module.canvas];
 
+    function read_timeout() {
+        console.log("device read timed out!");
+        _vialglue_set_response_error();
+    }
+
     function my_onmessage(e) {
         if (e.data.cmd == "write_device") {
-            g_device.sendReport(0, new Uint8Array(e.data.data))
+            g_device.sendReport(0, new Uint8Array(e.data.data));
+            g_read_timeout = setTimeout(read_timeout, 500);
         } else if (e.data.cmd == "unlock_start") {
             var u8 = new Uint8Array(e.data.data);
             var blob = new Blob([u8], {'type': 'image/png'});
@@ -120,6 +126,8 @@ body {
             document.getElementById("startup").style.display = "none";
         } else if (e.data.cmd == "notify_alive") {
             document.getElementById("startup_btn").disabled = false;
+        } else if (e.data.cmd == "fatal_error") {
+            alert(e.data.msg);
         }
     }
 
@@ -137,6 +145,7 @@ body {
         btn.value = "Connecting to the device...";
         await devices[0].open();
         devices[0].oninputreport = function(ev) {
+            clearTimeout(g_read_timeout);
             var ptr = _malloc(32);
             for (var i = 0; i < 32; ++i) {
                 setValue(ptr + i, ev.data.getUint8(i), "i8");
@@ -183,6 +192,10 @@ body {
     } else if (!HTMLCanvasElement.prototype.transferControlToOffscreen) {
         show_error("Your web browser does not support OffscreenCanvas");
     }
+
+    window.onerror = function(message, source, lineno, colno, error) {
+        alert(message);
+    };
 </script>
 
 <script src="main-@UNIQVER@.js"></script>

@@ -29,7 +29,7 @@ extern PyObject *PyInit_QtGui();
 extern PyObject *PyInit_QtWidgets();
 void execLastQApp();
 
-static volatile int glue_ready;
+static volatile int glue_error, glue_ready;
 static uint8_t glue_response[32];
 
 static PyObject * vialglue_write_device(PyObject *self, PyObject *args) {
@@ -59,12 +59,23 @@ static PyObject * vialglue_read_device(PyObject *self, PyObject *args) {
         // usleep(5); // spinlock is way more responsive, esp. in matrix tester
     }
 
-    return PyBytes_FromStringAndSize(glue_response, sizeof(glue_response));
+    size_t len = sizeof(glue_response);
+
+    if (glue_error)
+        len = 0;
+
+    return PyBytes_FromStringAndSize(glue_response, len);
 }
 
 void vialglue_set_response(uint8_t *data) {
     memcpy(glue_response, data, sizeof(glue_response));
 
+    glue_error = 0;
+    glue_ready = 1;
+}
+
+void vialglue_set_response_error(uint8_t *data) {
+    glue_error = 1;
     glue_ready = 1;
 }
 
@@ -121,6 +132,19 @@ static PyObject* vialglue_get_device_desc(PyObject *self, PyObject *args) {
     return PyUnicode_FromString(g_device_desc);
 }
 
+static PyObject* vialglue_fatal_error(PyObject *self, PyObject *args) {
+    const char *msg;
+
+    if (!PyArg_ParseTuple(args, "s", &msg))
+        return NULL;
+
+    EM_ASM({
+        postMessage({cmd: "fatal_error", msg: UTF8ToString($0)});
+    }, msg);
+
+    return PyLong_FromLong(0);
+}
+
 static PyMethodDef VialglueMethods[] = {
     {"write_device",  vialglue_write_device, METH_VARARGS, ""},
     {"read_device",  vialglue_read_device, METH_VARARGS, ""},
@@ -129,6 +153,7 @@ static PyMethodDef VialglueMethods[] = {
     {"unlock_done",  vialglue_unlock_done, METH_VARARGS, ""},
     {"notify_ready",  vialglue_notify_ready, METH_VARARGS, ""},
     {"get_device_desc",  vialglue_get_device_desc, METH_VARARGS, ""},
+    {"fatal_error",  vialglue_fatal_error, METH_VARARGS, ""},
     {NULL, NULL, 0, NULL}
 };
 
