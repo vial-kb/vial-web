@@ -16,12 +16,12 @@ function vialgluejs_write_device(data) {
     postMessage({cmd: "write_device", data: buf});
 }
 
-function vialgluejs_unlock_start(data, size) {
+function vialgluejs_unlock_start(data, size, width, height) {
     var buf = []
     for (var i = 0; i < size; ++i) {
         buf.push(getValue(data + i, "i8"));
     }
-    postMessage({cmd: "unlock_start", data: buf});
+    postMessage({cmd: "unlock_start", data: buf, width: width, height: height});
 }
 
 var window = {};

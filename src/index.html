@@ -114,7 +114,11 @@ body {
             var us = document.getElementById("unlock_status");
             us.max = 1;
             us.value = 0;
-            document.getElementById("unlock_img").src = url;
+            var img = document.getElementById("unlock_img");
+            img.src = url;
+            img.style.width = Math.round(e.data.width / window.devicePixelRatio) + "px";
+            img.style.height = Math.round(e.data.height / window.devicePixelRatio) + "px";
+            document.getElementById("unlock_inner").style.minWidth = img.style.width;
             document.getElementById("unlock").style.display = "";
         } else if (e.data.cmd == "unlock_status") {
             var us = document.getElementById("unlock_status");

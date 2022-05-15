@@ -88,13 +88,14 @@ void vialglue_set_device_desc(const char *s) {
 static PyObject * vialglue_unlock_start(PyObject *self, PyObject *args) {
     const uint8_t *data;
     Py_ssize_t size;
+    unsigned long width, height;
 
-    if (!PyArg_ParseTuple(args, "y#", &data, &size))
+    if (!PyArg_ParseTuple(args, "y#kk", &data, &size, &width, &height))
         return NULL;
 
     EM_ASM({
-        vialgluejs_unlock_start($0, $1);
-    }, data, size);
+        vialgluejs_unlock_start($0, $1, $2, $3);
+    }, data, size, width, height);
 
     return PyLong_FromLong(0);
 }
