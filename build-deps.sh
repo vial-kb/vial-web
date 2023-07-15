@@ -2,11 +2,14 @@
 
 set -e
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 source ./version.sh
 source ./emsdk/emsdk_env.sh
 
 embuilder build zlib bzip2
 
+rm -rf deps
 mkdir deps && cd deps
 
 tar xvf ../sources/xz-${XZ_VER}.tar.gz
@@ -49,7 +52,11 @@ popd
 tar xvf ../sources/qt-everywhere-src-${QT_VER}.tar.xz
 mv qt-everywhere-src-${QT_VER} qt5
 pushd qt5/
-patch -p1 < ../../patches/qt.patch
+patch -p1 < $SCRIPT_DIR/patches/qt/qt.patch
+pushd qtbase
+patch -p1 < $SCRIPT_DIR/patches/qt/qtcore-5.15.2-gcc11.patch
+patch -p1 < $SCRIPT_DIR/patches/qt/0008-Add-missing-limits-include.patch
+popd
 ./configure -xplatform wasm-emscripten -nomake examples -prefix $PWD/qtbase -feature-thread -opensource -confirm-license
 make module-qtbase module-qtdeclarative qtsvg -j$(nproc)
 popd
@@ -68,7 +75,7 @@ popd
 
 tar -xf ../sources/PyQt5_sip-${PYQT5SIP_VER}.tar.gz
 pushd PyQt5_sip-${PYQT5SIP_VER}/
-patch -p1 < ../../patches/pyqt5sip.patch
+patch -p1 < $SCRIPT_DIR/patches/pyqt5sip.patch
 mkdir build
 
 for file in apiversions.c voidptr.c threads.c objmap.c descriptors.c array.c qtlib.c int_convertors.c siplib.c; do
@@ -84,12 +91,12 @@ popd
 
 tar -xf ../sources/PyQt5-${PYQT5_VER}.tar.gz
 pushd PyQt5-${PYQT5_VER}/
-patch -p1 < ../../patches/pyqt5.patch
+patch -p1 < $SCRIPT_DIR/patches/pyqt5.patch
 python ./configure.py --qmake ../qt5/qtbase/bin/qmake --static --confirm-license --sip-incdir=../PyQt5_sip-${PYQT5SIP_VER}/
 
 pushd QtCore
 sed -i "s+-I../../cpython/Include+-I../../cpython/Include -I../../cpython/builddir/emscripten-browser/+g" Makefile
-patch < ../../../patches/pyqt5-qtcore.patch
+patch < $SCRIPT_DIR/patches/pyqt5-qtcore.patch
 make -j$(nproc)
 popd
 
@@ -100,7 +107,7 @@ popd
 
 pushd QtWidgets
 sed -i "s+-I../../cpython/Include+-I../../cpython/Include -I../../cpython/builddir/emscripten-browser/+g" Makefile
-patch < ../../../patches/pyqt5-qtwidgets.patch
+patch < $SCRIPT_DIR/patches/pyqt5-qtwidgets.patch
 make -j$(nproc)
 popd
 
