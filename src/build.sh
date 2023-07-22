@@ -33,6 +33,7 @@ emcc \
     -sALLOW_MEMORY_GROWTH \
     -sTOTAL_MEMORY=20971520 \
     -sFORCE_FILESYSTEM \
+    -sTEXTDECODER=0 \
     -lidbfs.js \
     -lnodefs.js \
     -lproxyfs.js \
