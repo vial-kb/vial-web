@@ -1,6 +1,5 @@
 FROM ubuntu:22.04
 
-
 ENV TZ=Etc/UTC
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -30,4 +29,9 @@ RUN ./build-deps.sh
 WORKDIR /root/vial-web/src
 RUN ./build.sh
 
-CMD /bin/bash
+COPY ./http-server-cors.py /root/vial-web/src/build/http-server-cors.py
+
+WORKDIR /root/vial-web/src/build
+
+CMD /usr/bin/python http-server-cors.py
+EXPOSE 8000
