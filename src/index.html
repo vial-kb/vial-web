@@ -118,10 +118,10 @@ body {
     Module.canvas = document.getElementById("canvas");
     Module.qtCanvasElements = [Module.canvas];
 
-    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const vialColorScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
     function preferredVialTheme() {
-        return colorScheme.matches ? "Dark" : "Light";
+        return vialColorScheme.matches ? "Dark" : "Light";
     }
 
     function themeSettingsCommand(theme) {
@@ -139,10 +139,10 @@ body {
         });
     }
 
-    if (typeof colorScheme.addEventListener === "function") {
-        colorScheme.addEventListener("change", applyVialTheme);
+    if (typeof vialColorScheme.addEventListener === "function") {
+        vialColorScheme.addEventListener("change", applyVialTheme);
     } else {
-        colorScheme.addListener(applyVialTheme);
+        vialColorScheme.addListener(applyVialTheme);
     }
 
     function read_timeout() {
